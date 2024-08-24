@@ -1,5 +1,9 @@
 const question = document.getElementById("question");
 const choices = Array.from(document.getElementsByClassName("choice-text"));
+const questionCounterText = document.getElementById('questionCounter');
+const scoreText = document.getElementById('score');
+const progressText = document.getElementById('progressText');
+const progressBarFull = document.getElementById('progressBarFull');
 
 let currentQuestion = {};
 let acceptingAnswers = false;
@@ -43,7 +47,7 @@ startGame = () => {
     score = 0;
     availableQuestions = [...questions];
     getNewQuestion();
-    console.log(availableQuestions);
+    // console.log(availableQuestions);
 }
 
 getNewQuestion = () => {
@@ -53,6 +57,10 @@ getNewQuestion = () => {
         return window.location.assign("/end.html");
     }
     questionCounter++;
+    progressText.innerText = questionCounter + "/" + MAX_QUESTIONS;
+
+    // update the progress bar
+    progressBarFull.style.width =  `${(questionCounter / MAX_QUESTIONS) * 100}%`; // (currentQuestion / MAX_QUESTIONS) * 100;
     const questionIndex = Math.floor(Math.random() * availableQuestions.length);
     currentQuestion = availableQuestions[questionIndex];
     question.innerText = currentQuestion.question;
@@ -65,7 +73,7 @@ getNewQuestion = () => {
     })
 
     availableQuestions.splice(questionIndex, 1);
-    console.log(availableQuestions);
+    // console.log(availableQuestions);
 
     acceptingAnswers = true;
 }
@@ -76,14 +84,31 @@ choices.forEach( choice => {
         if (!acceptingAnswers) return;
         acceptingAnswers = false;
 
-        const selectedChoices = e.target;
-        const selectedAnswers = selectedChoices.dataset["number"];
-        console.log(selectedAnswers);
-        getNewQuestion();
+        const selectedChoice = e.target;
+        const selectedAnswers = selectedChoice.dataset["number"];
+
+        let classToApply = 'incorrect';
+
+        if (selectedAnswers == currentQuestion.answer) {
+            classToApply = 'correct';
+        }
+
+        if (classToApply === 'correct') {
+            incrementScore(CORRECT_BONUS);
+        }
+
+        selectedChoice.parentElement.classList.add(classToApply);
+        setTimeout(() => {
+            selectedChoice.parentElement.classList.remove(classToApply);
+            getNewQuestion();
+        }, 1000);
+        console.log(selectedAnswers == currentQuestion.answer);
     })
 })
 
+incrementScore = num => {
+    score += num;
+    scoreText.innerText = score;
+}
 
 startGame();
-
-console.log(choices);
